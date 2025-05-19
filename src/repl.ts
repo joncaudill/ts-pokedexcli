@@ -1,50 +1,36 @@
-import readline from 'readline';
-import { getCommands } from './commands.js';
+import { State } from "./state.js";
 
-export function cleanInput(input: string): string[] {
-    // Remove leading and trailing whitespace
-    input = input.trim().toLowerCase();
-    
-    // Split the input string by whitespace
-    const words = input.split(/\s+/);
-    
-    // Filter out empty strings
-    const cleanedWords = words.filter(word => word.length > 0);
-    
-    return cleanedWords;
-}
+export function startREPL(state: State) {
+  state.readline.prompt();
 
-export function startREPL() {
-    
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        prompt: '> ',
-    });
-
-    rl.prompt();
-
-  rl.on("line", async (input) => {
+  state.readline.on("line", async (input) => {
     const words = cleanInput(input);
     if (words.length === 0) {
-      rl.prompt();
+      state.readline.prompt();
       return;
     }
 
     const commandName = words[0];
 
-    const commands = getCommands();
-    const cmd = commands[commandName];
+    const cmd = state.commands[commandName];
     if (!cmd) {
       console.log(
         `Unknown command: "${commandName}". Type "help" for a list of commands.`,
       );
-      rl.prompt();
+      state.readline.prompt();
       return;
     }
 
-    cmd.callback(commands);
+    cmd.callback(state);
 
-    rl.prompt();
+    state.readline.prompt();
   });
+}
+
+export function cleanInput(input: string): string[] {
+  return input
+    .toLowerCase()
+    .trim()
+    .split(" ")
+    .filter((word) => word !== "");
 }
